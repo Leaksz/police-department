@@ -1,0 +1,25 @@
+{
+  "name": "police-department",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file .env .",
+    "build": "tsc",
+    "dev": "tsx --env-file .env ./src/server.ts",
+    "watch": "tsx --watch --env-file .env ./src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.14",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
