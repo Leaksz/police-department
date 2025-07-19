@@ -1,34 +1,25 @@
+import { Agent, AgentRole } from "types/agent.types";
+import { RepositoryResponse } from "types/response";
+import { generateAgents } from "utils/generateMockData";
 import { v4 as uuidv4 } from "uuid";
 
-export enum AgentRole {
-    Officer,
-    Detective,
-    Captain,
-    Chief,
-}
+const agents: Agent[] = generateAgents(1000);
 
-export interface Agent {
-    id: string;
-    name: string;
-    role: AgentRole;
-    incorporationDate: string;
-}
+let agentMapCache: Map<string, Agent> | null = null;
+const getAgentMap = () => {
+    if (!agentMapCache) {
+        agentMapCache = new Map(agents.map((agent) => [agent.id, agent]));
+    }
 
-const agents: Agent[] = [
-    // {
-    //     id: "401bccf5-cf9e-489d-8412-446cd169a0f1",
-    //     name: "Rommel Carneiro",
-    //     incorporationDate: "1992/10/04",
-    //     role: AgentRole.Chief,
-    // },
-];
+    return agentMapCache;
+};
 
 function findAll(): Agent[] {
     return agents;
 }
 
 function findById(id: string) {
-    return agents.find((agent) => agent.id === id);
+    return getAgentMap().get(id);
 }
 
 function create(name: string, role: AgentRole, incorporationDate: string): Agent {
@@ -38,18 +29,40 @@ function create(name: string, role: AgentRole, incorporationDate: string): Agent
         role,
         incorporationDate,
     };
+
     agents.push(agent);
+    if (agentMapCache) {
+        agentMapCache.set(agent.id, agent);
+    }
 
     return agent;
 }
 
-function deleteById(id: string) {
+function deleteById(id: string): RepositoryResponse {
     const agentToDelete = findById(id);
-    if (!agentToDelete) return false;
+    if (!agentToDelete) return RepositoryResponse.NotFound;
 
     const index = agents.indexOf(agentToDelete);
+    if (index === -1) return RepositoryResponse.Failed;
+
     agents.splice(index, 1);
-    return true;
+    if (agentMapCache) {
+        agentMapCache.delete(id);
+    }
+
+    return RepositoryResponse.Success;
+}
+
+function update(updatedAgent: Agent): RepositoryResponse {
+    const index = agents.indexOf(updatedAgent);
+    if (index === -1) return RepositoryResponse.NotFound;
+
+    agents[index] = updatedAgent;
+    if (agentMapCache) {
+        agentMapCache.set(updatedAgent.id, updatedAgent);
+    }
+
+    return RepositoryResponse.Success;
 }
 
 export default {
@@ -57,4 +70,5 @@ export default {
     findById,
     create,
     deleteById,
+    update,
 };

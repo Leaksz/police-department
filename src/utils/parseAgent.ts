@@ -1,4 +1,4 @@
-import { Agent, AgentRole } from "repositories/agentsRepository";
+import { Agent, AgentRole } from "types/agent.types";
 
 export function parseAgent(agent: Agent) {
     return {

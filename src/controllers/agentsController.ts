@@ -1,9 +1,18 @@
 import type { Request, Response } from "express";
 
-import agentsRepository, { AgentRole } from "../repositories/agentsRepository";
-import { CreateAgentBody, DeleteAgentParams, GetAgentByIdParams } from "types/Agent";
-import isAgentRole from "utils/isAgentRole";
+import {
+    Agent,
+    AgentRole,
+    CreateAgentBody,
+    DeleteAgentParams,
+    GetAgentByIdParams,
+    PutAgentBody,
+    UpdateAgentParams,
+} from "types/agent.types";
+import { RepositoryResponse } from "types/response";
 import { parseAgent } from "utils/parseAgent";
+import { hasValidationErrors, validateCreateAgent, validatePutAgent } from "utils/agentValidations";
+import agentsRepository from "../repositories/agentsRepository";
 
 function getAllAgents(_request: Request, response: Response) {
     const agents = agentsRepository.findAll();
@@ -29,31 +38,18 @@ function getAgentById(request: Request<GetAgentByIdParams>, response: Response) 
         });
     }
 
-    return response.send(agent);
+    return response.send(parseAgent(agent));
 }
 
 function createAgent(request: Request<{}, {}, CreateAgentBody>, response: Response) {
     const { name, role, incorporationDate } = request.body;
 
-    if (!name || !role || !incorporationDate) {
+    const errors = validateCreateAgent(request.body);
+    if (hasValidationErrors(errors)) {
         return response.status(400).send({
             status: 400,
             message: "Invalid parameters",
-            errors: {
-                name: name ? "name field must be defined " : undefined,
-                role: role ? "role field must be defined" : undefined,
-                incorporationDate: incorporationDate
-                    ? "incorporationDate field must follow the 'YYYY-MM-DD' formatting"
-                    : undefined,
-            },
-        });
-    }
-
-    if (!isAgentRole(role)) {
-        return response.status(400).send({
-            status: 400,
-            message: "Invalid role",
-            error: `Role '${role}' is not a valid Agent Role`,
+            errors,
         });
     }
 
@@ -74,11 +70,14 @@ function deleteAgent(request: Request<DeleteAgentParams>, response: Response) {
         });
     }
 
-    const success = agentsRepository.deleteById(id);
-    if (!success) {
+    const deleted = agentsRepository.deleteById(id);
+    if (deleted !== RepositoryResponse.Success) {
         return response.status(404).send({
             status: 404,
-            message: `Failed to delete agent with id '${id}'`,
+            message:
+                deleted === RepositoryResponse.Failed
+                    ? `Failed to delete agent with id '${id}'`
+                    : `Agent with id '${id}' not found`,
             errors: [],
         });
     }
@@ -86,9 +85,51 @@ function deleteAgent(request: Request<DeleteAgentParams>, response: Response) {
     return response.status(204).send();
 }
 
+function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, response: Response) {
+    const { name, role, incorporationDate } = request.body;
+    const agentId = request.params.id;
+
+    if (!agentsRepository.findById(agentId)) {
+        return response.status(404).send({
+            status: 404,
+            message: "Invalid parameters",
+            errors: [`Agent with id ${agentId} not found`],
+        });
+    }
+
+    const errors = validatePutAgent(request.body);
+    if (hasValidationErrors(errors)) {
+        return response.status(400).send({
+            status: 400,
+            message: "Invalid parameters",
+            errors,
+        });
+    }
+
+    const parsedRole = AgentRole[role as unknown as keyof typeof AgentRole];
+
+    const updatedAgent: Agent = {
+        id: agentId,
+        name,
+        role: parsedRole,
+        incorporationDate,
+    };
+
+    const updated = agentsRepository.update(updatedAgent);
+    if (updated !== RepositoryResponse.Success) {
+        return response.status(404).send({
+            status: 404,
+            message: `Agent with id ${agentId} not found`,
+        });
+    }
+
+    return response.status(200).send(parseAgent(updatedAgent));
+}
+
 export default {
     getAllAgents,
     getAgentById,
     createAgent,
     deleteAgent,
+    putAgent,
 };
