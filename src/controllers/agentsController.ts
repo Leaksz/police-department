@@ -6,16 +6,63 @@ import {
     CreateAgentBody,
     DeleteAgentParams,
     GetAgentByIdParams,
+    GetAllAgentsQuery,
+    PatchAgentBody,
     PutAgentBody,
+    SortStrings,
     UpdateAgentParams,
 } from "types/agent.types";
 import { RepositoryResponse } from "types/response";
-import { parseAgent } from "utils/parseAgent";
-import { hasValidationErrors, validateCreateAgent, validatePutAgent } from "utils/agentValidations";
+import {
+    fieldConfigs,
+    isValidSortString,
+    validateCreateAgent,
+    validateField,
+    validatePatchAgent,
+    validatePutAgent,
+} from "utils/agentValidations";
+import { parseAgent, parseAgentRole } from "utils/parse";
 import agentsRepository from "../repositories/agentsRepository";
+import hasValidationErrors from "utils/hasValidationErrors";
 
-function getAllAgents(_request: Request, response: Response) {
-    const agents = agentsRepository.findAll();
+function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response: Response) {
+    let agents = agentsRepository.findAll();
+
+    if (Object.hasOwn(request.query, "role")) {
+        const error = validateField(request.query.role, fieldConfigs[1].rules, true, fieldConfigs[1].displayName);
+        if (error) {
+            return response.status(400).send({
+                status: 400,
+                message: "Invalid parameters",
+                error,
+            });
+        }
+
+        agents = agents.filter((agent) => agent.role == parseAgentRole(request.query.role as string));
+    }
+
+    if (Object.hasOwn(request.query, "sort")) {
+        if (!isValidSortString(request.query.sort!)) {
+            return response.status(400).send({
+                status: 400,
+                message: "Invalid parameters",
+                error: `'${request.query.sort}' is not a valid sort string, Valid strings are: ${Object.values(
+                    SortStrings
+                )
+                    .filter((role) => isNaN(Number(role)))
+                    .join(", ")}}`,
+            });
+        }
+
+        agents = agents.toSorted((a, b) => {
+            return new Date(a.incorporationDate).getTime() - new Date(b.incorporationDate).getTime();
+        });
+
+        if (SortStrings[request.query.sort!] === SortStrings["-incorporationDate"]) {
+            agents.reverse();
+        }
+    }
+
     return response.json(agents.map((agent) => parseAgent(agent)));
 }
 
@@ -53,9 +100,7 @@ function createAgent(request: Request<{}, {}, CreateAgentBody>, response: Respon
         });
     }
 
-    const parsedRole = AgentRole[role as unknown as keyof typeof AgentRole];
-
-    const newAgent = agentsRepository.create(name, parsedRole, incorporationDate);
+    const newAgent = agentsRepository.create(name, parseAgentRole(role), incorporationDate);
 
     return response.status(201).send(parseAgent(newAgent));
 }
@@ -126,10 +171,50 @@ function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, respons
     return response.status(200).send(parseAgent(updatedAgent));
 }
 
+function patchAgent(request: Request<UpdateAgentParams, {}, PatchAgentBody>, response: Response) {
+    const agent = agentsRepository.findById(request.params.id);
+
+    if (!agent) {
+        return response.status(404).send({
+            status: 404,
+            message: "Invalid parameters",
+            errors: [`Agent with id ${request.params.id} not found`],
+        });
+    }
+
+    const errors = validatePatchAgent(request.body);
+    if (hasValidationErrors(errors)) {
+        return response.status(400).send({
+            status: 400,
+            message: "Invalid parameters",
+            errors,
+        });
+    }
+
+    const updatedAgent: Agent = {
+        ...agent,
+        ...(Object.hasOwn(request.body, "name") && { name: request.body.name }),
+        ...(Object.hasOwn(request.body, "role") && { role: AgentRole[request.body.role as keyof typeof AgentRole] }),
+        ...(Object.hasOwn(request.body, "incorporationDate") && { incorporationDate: request.body.incorporationDate }),
+    };
+
+    const updated = agentsRepository.update(updatedAgent);
+    if (updated !== RepositoryResponse.Success) {
+        return response.status(404).send({
+            status: 404,
+            message: "Invalid parameters",
+            errors: [`Agent with id ${request.params.id} not found`],
+        });
+    }
+
+    return response.status(200).send(parseAgent(updatedAgent));
+}
+
 export default {
     getAllAgents,
     getAgentById,
     createAgent,
     deleteAgent,
     putAgent,
+    patchAgent,
 };

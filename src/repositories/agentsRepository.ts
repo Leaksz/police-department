@@ -3,23 +3,23 @@ import { RepositoryResponse } from "types/response";
 import { generateAgents } from "utils/generateMockData";
 import { v4 as uuidv4 } from "uuid";
 
-const agents: Agent[] = generateAgents(1000);
+const agents: Agent[] = generateAgents(100);
 
-let agentMapCache: Map<string, Agent> | null = null;
-const getAgentMap = () => {
-    if (!agentMapCache) {
-        agentMapCache = new Map(agents.map((agent) => [agent.id, agent]));
+let agentsMapCache: Map<string, Agent> | null = null;
+function getAgentsMap(): Map<string, Agent> {
+    if (!agentsMapCache) {
+        agentsMapCache = new Map(agents.map((agent) => [agent.id, agent]));
     }
 
-    return agentMapCache;
-};
+    return agentsMapCache;
+}
 
-function findAll(): Agent[] {
+function findAll() {
     return agents;
 }
 
 function findById(id: string) {
-    return getAgentMap().get(id);
+    return getAgentsMap().get(id);
 }
 
 function create(name: string, role: AgentRole, incorporationDate: string): Agent {
@@ -31,8 +31,8 @@ function create(name: string, role: AgentRole, incorporationDate: string): Agent
     };
 
     agents.push(agent);
-    if (agentMapCache) {
-        agentMapCache.set(agent.id, agent);
+    if (agentsMapCache) {
+        agentsMapCache.set(agent.id, agent);
     }
 
     return agent;
@@ -46,20 +46,20 @@ function deleteById(id: string): RepositoryResponse {
     if (index === -1) return RepositoryResponse.Failed;
 
     agents.splice(index, 1);
-    if (agentMapCache) {
-        agentMapCache.delete(id);
+    if (agentsMapCache) {
+        agentsMapCache.delete(id);
     }
 
     return RepositoryResponse.Success;
 }
 
 function update(updatedAgent: Agent): RepositoryResponse {
-    const index = agents.indexOf(updatedAgent);
+    const index = agents.findIndex((agent) => agent.id === updatedAgent.id);
     if (index === -1) return RepositoryResponse.NotFound;
 
     agents[index] = updatedAgent;
-    if (agentMapCache) {
-        agentMapCache.set(updatedAgent.id, updatedAgent);
+    if (agentsMapCache) {
+        agentsMapCache.set(updatedAgent.id, updatedAgent);
     }
 
     return RepositoryResponse.Success;
