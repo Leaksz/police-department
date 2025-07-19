@@ -1,5 +1,6 @@
-import { response, type Request, type Response } from "express";
+import { type Request, type Response } from "express";
 
+import agentsRepository from "repositories/agentsRepository";
 import {
     Case,
     CaseStatus,
@@ -24,7 +25,6 @@ import {
 import hasValidationErrors from "utils/hasValidationErrors";
 import { parseAgent, parseCase, parseStringToEnum } from "utils/parse";
 import casesRepository from "../repositories/casesRepository";
-import agentsRepository from "repositories/agentsRepository";
 
 export function getAllCases(request: Request<{}, {}, {}, GetAllCasesQuery>, response: Response) {
     let cases = casesRepository.findAll();
