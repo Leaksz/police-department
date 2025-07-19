@@ -14,14 +14,14 @@ import {
 } from "types/agent.types";
 import { RepositoryResponse } from "types/response";
 import {
-    fieldConfigs,
+    agentFieldConfigs,
     isValidSortString,
     validateCreateAgent,
-    validateField,
+    validateAgentField,
     validatePatchAgent,
     validatePutAgent,
 } from "utils/agentValidations";
-import { parseAgent, parseAgentRole } from "utils/parse";
+import { parseAgent, parseStringToEnum } from "utils/parse";
 import agentsRepository from "../repositories/agentsRepository";
 import hasValidationErrors from "utils/hasValidationErrors";
 
@@ -29,7 +29,12 @@ function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response:
     let agents = agentsRepository.findAll();
 
     if (Object.hasOwn(request.query, "role")) {
-        const error = validateField(request.query.role, fieldConfigs[1].rules, true, fieldConfigs[1].displayName);
+        const error = validateAgentField(
+            request.query.role,
+            agentFieldConfigs[1].rules,
+            true,
+            agentFieldConfigs[1].displayName
+        );
         if (error) {
             return response.status(400).send({
                 status: 400,
@@ -38,7 +43,7 @@ function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response:
             });
         }
 
-        agents = agents.filter((agent) => agent.role == parseAgentRole(request.query.role as string));
+        agents = agents.filter((agent) => agent.role == parseStringToEnum(request.query.role as string, AgentRole));
     }
 
     if (Object.hasOwn(request.query, "sort")) {
@@ -100,7 +105,7 @@ function createAgent(request: Request<{}, {}, CreateAgentBody>, response: Respon
         });
     }
 
-    const newAgent = agentsRepository.create(name, parseAgentRole(role), incorporationDate);
+    const newAgent = agentsRepository.create(name, parseStringToEnum(role, AgentRole), incorporationDate);
 
     return response.status(201).send(parseAgent(newAgent));
 }

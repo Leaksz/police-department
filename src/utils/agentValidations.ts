@@ -11,7 +11,7 @@ type ValidationRule<T> = {
     message: string;
 };
 
-export function validateField<T>(
+export function validateAgentField<T>(
     value: unknown,
     rules: ValidationRule<T>[],
     isRequired: boolean,
@@ -61,7 +61,7 @@ const incorporationDateRules: ValidationRule<string>[] = [
     },
 ];
 
-export const fieldConfigs = [
+export const agentFieldConfigs = [
     { key: "name", rules: nameRules, displayName: "Name" },
     { key: "role", rules: roleRules, displayName: "Role" },
     { key: "incorporationDate", rules: incorporationDateRules, displayName: "Incorporation Date" },
@@ -70,11 +70,11 @@ export const fieldConfigs = [
 export function validateAgent(body: ValidateAgentInput, isPartial = false) {
     const errors: Record<string, string> = {};
 
-    for (const config of fieldConfigs) {
+    for (const config of agentFieldConfigs) {
         const shouldValidate = Object.hasOwn(body, config.key) || !isPartial;
 
         if (shouldValidate) {
-            const error = validateField(body[config.key], config.rules, !isPartial, config.displayName);
+            const error = validateAgentField(body[config.key], config.rules, !isPartial, config.displayName);
 
             if (error) {
                 errors[config.key] = error;
@@ -84,10 +84,12 @@ export function validateAgent(body: ValidateAgentInput, isPartial = false) {
 
     // For partial validation, ensure at least one field is provided
     if (isPartial) {
-        const providedFields = fieldConfigs.map((config) => config.key).filter((field) => Object.hasOwn(body, field));
+        const providedFields = agentFieldConfigs
+            .map((config) => config.key)
+            .filter((field) => Object.hasOwn(body, field));
 
         if (providedFields.length === 0) {
-            const fieldNames = fieldConfigs.map((config) => config.displayName.toLowerCase()).join(", ");
+            const fieldNames = agentFieldConfigs.map((config) => config.displayName.toLowerCase()).join(", ");
             errors.body = `At least one field (${fieldNames}) must be provided for update`;
         }
     }

@@ -289,7 +289,7 @@ export function generateAgents(amount: number): Agent[] {
     const agents: Agent[] = [];
     const usedNames = new Set<string>();
 
-    for (let i = 0; i < amount; i++) {
+    for (let i = 0; i <= amount + 1; i++) {
         let firstName: string;
         let lastName: string;
         let fullName: string;

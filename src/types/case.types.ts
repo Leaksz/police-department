@@ -28,11 +28,12 @@ export interface GetAllCasesQuery {
     status: string;
 }
 
-export interface SearchCasesQuery {
-    search: string;
+export interface SearchCaseQuery {
+    q: string;
 }
 
 // Type aliases
 export type UpdateCaseParams = CaseIdParams;
 export type DeleteCaseParams = CaseIdParams;
 export type GetCaseByIdParams = CaseIdParams;
+export type GetCaseAgentParams = CaseIdParams;
