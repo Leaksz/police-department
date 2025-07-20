@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node --env-file .env .",
-    "build": "tsc",
+    "start": "node --env-file .env ./build/server.js",
+    "build": "tsc && tsc-alias",
     "dev": "tsx --env-file .env ./src/server.ts",
     "watch": "tsx --watch --env-file .env ./src/server.ts"
   },
@@ -14,11 +14,16 @@
   "description": "",
   "dependencies": {
     "dotenv": "^17.2.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "tsc-alias": "^1.8.16"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.14",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }

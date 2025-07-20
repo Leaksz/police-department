@@ -10,8 +10,8 @@
         // Language and environment options
         "lib": ["ESNext"],
         "target": "ESNext",
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
 
         // Linting options
         "noUnusedLocals": true,
@@ -26,7 +26,9 @@
         // Path mapping Options
         "baseUrl": "./src",
 
-        "types": ["node"]
+        "paths": {
+            "types/*": ["types/*"]
+        }
     },
 
     // Include and Exclude Options
