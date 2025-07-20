@@ -1,11 +1,8 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const casesController_1 = __importDefault(require("../controllers/casesController"));
-const router = express_1.default.Router();
+import express from "express";
+import casesController from "../controllers/casesController";
+
+const router = express.Router();
+
 /**
  * @swagger
  * components:
@@ -101,12 +98,14 @@ const router = express_1.default.Router();
  *         status: "Solved"
  *         description: "Case resolved. Suspect apprehended and items recovered."
  */
+
 /**
  * @swagger
  * tags:
  *   name: Cases
  *   description: Police cases management API
  */
+
 /**
  * @swagger
  * /cases:
@@ -143,7 +142,8 @@ const router = express_1.default.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/cases", casesController_1.default.getAllCases);
+router.get("/cases", casesController.getAllCases);
+
 /**
  * @swagger
  * /cases/search:
@@ -175,7 +175,8 @@ router.get("/cases", casesController_1.default.getAllCases);
  *       500:
  *         description: Internal server error
  */
-router.get("/cases/search", casesController_1.default.searchCase);
+router.get("/cases/search", casesController.searchCase);
+
 /**
  * @swagger
  * /cases/{id}:
@@ -211,7 +212,8 @@ router.get("/cases/search", casesController_1.default.searchCase);
  *       500:
  *         description: Internal server error
  */
-router.get("/cases/:id", casesController_1.default.getCaseById);
+router.get("/cases/:id", casesController.getCaseById);
+
 /**
  * @swagger
  * /cases/{id}/agent:
@@ -247,7 +249,8 @@ router.get("/cases/:id", casesController_1.default.getCaseById);
  *       500:
  *         description: Internal server error
  */
-router.get("/cases/:id/agent", casesController_1.default.getCaseAgent);
+router.get("/cases/:id/agent", casesController.getCaseAgent);
+
 /**
  * @swagger
  * /cases:
@@ -276,7 +279,8 @@ router.get("/cases/:id/agent", casesController_1.default.getCaseAgent);
  *       500:
  *         description: Internal server error
  */
-router.post("/cases", casesController_1.default.createCase);
+router.post("/cases", casesController.createCase);
+
 /**
  * @swagger
  * /cases/{id}:
@@ -308,7 +312,8 @@ router.post("/cases", casesController_1.default.createCase);
  *       500:
  *         description: Internal server error
  */
-router.delete("/cases/:id", casesController_1.default.deleteCase);
+router.delete("/cases/:id", casesController.deleteCase);
+
 /**
  * @swagger
  * /cases/{id}:
@@ -350,7 +355,8 @@ router.delete("/cases/:id", casesController_1.default.deleteCase);
  *       500:
  *         description: Internal server error
  */
-router.put("/cases/:id", casesController_1.default.putCase);
+router.put("/cases/:id", casesController.putCase);
+
 /**
  * @swagger
  * /cases/{id}:
@@ -392,5 +398,6 @@ router.put("/cases/:id", casesController_1.default.putCase);
  *       500:
  *         description: Internal server error
  */
-router.patch("/cases/:id", casesController_1.default.patchCase);
-exports.default = router;
+router.patch("/cases/:id", casesController.patchCase);
+
+export default router;

@@ -1,11 +1,8 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const agentsController_1 = __importDefault(require("../controllers/agentsController"));
-const router = express_1.default.Router();
+import express from "express";
+import agentsController from "../controllers/agentsController";
+
+const router = express.Router();
+
 /**
  * @swagger
  * components:
@@ -121,12 +118,14 @@ const router = express_1.default.Router();
  *         message: "Invalid parameters"
  *         errors: ["Name is required", "Role must be valid"]
  */
+
 /**
  * @swagger
  * tags:
  *   name: Agents
  *   description: Police agents management API
  */
+
 /**
  * @swagger
  * /agents:
@@ -164,7 +163,8 @@ const router = express_1.default.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/agents", agentsController_1.default.getAllAgents);
+router.get("/agents", agentsController.getAllAgents);
+
 /**
  * @swagger
  * /agents/{id}:
@@ -200,7 +200,8 @@ router.get("/agents", agentsController_1.default.getAllAgents);
  *       500:
  *         description: Internal server error
  */
-router.get("/agents/:id", agentsController_1.default.getAgentById);
+router.get("/agents/:id", agentsController.getAgentById);
+
 /**
  * @swagger
  * /agents:
@@ -229,7 +230,8 @@ router.get("/agents/:id", agentsController_1.default.getAgentById);
  *       500:
  *         description: Internal server error
  */
-router.post("/agents", agentsController_1.default.createAgent);
+router.post("/agents", agentsController.createAgent);
+
 /**
  * @swagger
  * /agents/{id}:
@@ -261,7 +263,8 @@ router.post("/agents", agentsController_1.default.createAgent);
  *       500:
  *         description: Internal server error
  */
-router.delete("/agents/:id", agentsController_1.default.deleteAgent);
+router.delete("/agents/:id", agentsController.deleteAgent);
+
 /**
  * @swagger
  * /agents/{id}:
@@ -303,7 +306,8 @@ router.delete("/agents/:id", agentsController_1.default.deleteAgent);
  *       500:
  *         description: Internal server error
  */
-router.put("/agents/:id", agentsController_1.default.putAgent);
+router.put("/agents/:id", agentsController.putAgent);
+
 /**
  * @swagger
  * /agents/{id}:
@@ -345,5 +349,6 @@ router.put("/agents/:id", agentsController_1.default.putAgent);
  *       500:
  *         description: Internal server error
  */
-router.patch("/agents/:id", agentsController_1.default.patchAgent);
-exports.default = router;
+router.patch("/agents/:id", agentsController.patchAgent);
+
+export default router;
