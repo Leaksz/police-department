@@ -56,7 +56,9 @@ export function getAllCases(request: Request<{}, {}, {}, GetAllCasesQuery>, resp
             });
         }
 
-        cases = cases.filter((caseRecord) => caseRecord.status === parseStringToEnum(request.query.status, CaseStatus));
+        cases = cases.filter(
+            (caseRecord) => caseRecord.status === parseStringToEnum(request.query.status!, CaseStatus)
+        );
     }
 
     return response.json(cases.map((caseRecord) => parseCase(caseRecord)));
