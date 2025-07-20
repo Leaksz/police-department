@@ -60,6 +60,10 @@ const incorporationDateRules: ValidationRule<string>[] = [
         condition: (date) => !isNaN(new Date(date).getTime()),
         message: "Incorporation date must be a valid date",
     },
+    {
+        condition: (date) => new Date(date).getTime() > Date.now(),
+        message: "Incorporation date can't be in the future",
+    },
 ];
 
 export const agentFieldConfigs = [
