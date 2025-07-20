@@ -25,7 +25,7 @@ export interface CaseIdParams extends Pick<Case, "id"> {}
 // Request queries
 export interface GetAllCasesQuery {
     agentId?: string;
-    status: string;
+    status?: string;
 }
 
 export interface SearchCaseQuery {

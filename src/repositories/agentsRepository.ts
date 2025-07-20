@@ -3,7 +3,7 @@ import { RepositoryResponse } from "types/response";
 import { generateAgents } from "utils/generateMockData";
 import { v4 as uuidv4 } from "uuid";
 
-const agents: Agent[] = generateAgents(2);
+const agents: Agent[] = generateAgents(1000);
 
 let agentsMapCache: Map<string, Agent> | null = null;
 function getAgentsMap(): Map<string, Agent> {

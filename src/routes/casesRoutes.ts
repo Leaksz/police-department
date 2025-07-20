@@ -44,7 +44,6 @@ const router = express.Router();
  *       required:
  *         - title
  *         - description
- *         - status
  *       properties:
  *         title:
  *           type: string
@@ -54,7 +53,8 @@ const router = express.Router();
  *           description: Detailed description of the case
  *         status:
  *           type: string
- *           description: Status of the case (as string)
+ *           enum: [Open, Solved]
+ *           description: Optional status of the case (defaults to Open if not provided)
  *       example:
  *         title: "Burglary Investigation"
  *         description: "Break-in reported at 123 Main Street. Multiple items stolen including electronics and jewelry."
@@ -65,7 +65,6 @@ const router = express.Router();
  *       required:
  *         - title
  *         - description
- *         - status
  *       properties:
  *         title:
  *           type: string
@@ -75,7 +74,8 @@ const router = express.Router();
  *           description: Detailed description of the case
  *         status:
  *           type: string
- *           description: Status of the case (as string)
+ *           enum: [Open, Solved]
+ *           description: Optional status of the case
  *       example:
  *         title: "Burglary Investigation - Updated"
  *         description: "Break-in reported at 123 Main Street. Investigation ongoing with new leads."
@@ -92,7 +92,8 @@ const router = express.Router();
  *           description: Detailed description of the case
  *         status:
  *           type: string
- *           description: Status of the case (as string)
+ *           enum: [Open, Solved]
+ *           description: Status of the case
  *       example:
  *         status: "Solved"
  *         description: "Case resolved. Suspect apprehended and items recovered."
@@ -114,15 +115,15 @@ const router = express.Router();
  *     parameters:
  *       - in: query
  *         name: status
- *         required: true
  *         schema:
  *           type: string
- *         description: Filter cases by status
+ *           enum: [Open, Solved]
+ *         description: Optional filter cases by status
  *       - in: query
  *         name: agentId
  *         schema:
  *           type: string
- *         description: Filter cases by assigned agent ID
+ *         description: Optional filter cases by assigned agent ID
  *     responses:
  *       200:
  *         description: List of all cases

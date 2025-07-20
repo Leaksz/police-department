@@ -78,6 +78,10 @@ export const caseFieldConfigs = [
 export function validateCase(body: ValidateCaseInput, isPartial = false) {
     const errors: Record<string, string> = {};
 
+    if (Object.hasOwn(body, "id")) {
+        errors["id"] = "You can't pass an id when making this request";
+    }
+
     for (const config of caseFieldConfigs) {
         const shouldValidate = Object.hasOwn(body, config.key) || !isPartial;
 

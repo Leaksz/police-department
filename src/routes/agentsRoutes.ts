@@ -51,7 +51,8 @@ const router = express.Router();
  *           description: Date when the agent was incorporated into the department
  *         role:
  *           type: string
- *           description: The agent's role in the department (as string)
+ *           enum: [Officer, Detective, Captain, Chief]
+ *           description: The agent's role in the department
  *       example:
  *         name: "Jane Doe"
  *         incorporationDate: "2024-01-15"
@@ -73,7 +74,8 @@ const router = express.Router();
  *           description: Date when the agent was incorporated into the department
  *         role:
  *           type: string
- *           description: The agent's role in the department (as string)
+ *           enum: [Officer, Detective, Captain, Chief]
+ *           description: The agent's role in the department
  *       example:
  *         name: "John Smith Updated"
  *         incorporationDate: "2023-01-15"
@@ -91,7 +93,8 @@ const router = express.Router();
  *           description: Date when the agent was incorporated into the department
  *         role:
  *           type: string
- *           description: The agent's role in the department (as string)
+ *           enum: [Officer, Detective, Captain, Chief]
+ *           description: The agent's role in the department
  *       example:
  *         name: "John Smith Updated"
  *         role: "Captain"
@@ -134,13 +137,14 @@ const router = express.Router();
  *         name: role
  *         schema:
  *           type: string
- *         description: Filter agents by role
+ *           enum: [Officer, Detective, Captain, Chief]
+ *         description: Optional filter agents by role
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
  *           enum: [incorporationDate, -incorporationDate]
- *         description: Sort agents by incorporation date (ascending or descending)
+ *         description: Optional sort agents by incorporation date (ascending or descending)
  *     responses:
  *       200:
  *         description: List of all agents

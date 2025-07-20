@@ -1,6 +1,7 @@
 import { AgentRole, SortStrings } from "types/agent.types";
 
 interface ValidateAgentInput {
+    id?: unknown;
     name?: unknown;
     role?: unknown;
     incorporationDate?: unknown;
@@ -69,6 +70,10 @@ export const agentFieldConfigs = [
 
 export function validateAgent(body: ValidateAgentInput, isPartial = false) {
     const errors: Record<string, string> = {};
+
+    if (Object.hasOwn(body, "id")) {
+        errors["id"] = "You can't pass an id when making this request";
+    }
 
     for (const config of agentFieldConfigs) {
         const shouldValidate = Object.hasOwn(body, config.key) || !isPartial;
