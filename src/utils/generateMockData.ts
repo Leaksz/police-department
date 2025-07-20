@@ -1,30 +1,34 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateAgents = generateAgents;
-const uuid_1 = require("uuid");
-const agent_types_1 = require("../types/agent.types");
-function generateRandomDate() {
+import { v4 as uuidv4 } from "uuid";
+import { Agent, AgentRole } from "types/agent.types";
+
+function generateRandomDate(): string {
     const start = new Date(2015, 0, 1);
     const end = new Date(2024, 11, 31);
     const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
     const date = new Date(randomTime);
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
+
     return `${year}/${month}/${day}`;
 }
-function getRandomRole(roles, roleWeights) {
+
+function getRandomRole(roles: AgentRole[], roleWeights: number[]): AgentRole {
     const random = Math.random();
     let cumulativeWeight = 0;
+
     for (let i = 0; i < roles.length; i++) {
         cumulativeWeight += roleWeights[i];
         if (random <= cumulativeWeight) {
             return roles[i];
         }
     }
-    return agent_types_1.AgentRole.Officer;
+
+    return AgentRole.Officer;
 }
-function generateAgents(amount) {
+
+export function generateAgents(amount: number): Agent[] {
     const firstNames = [
         "James",
         "Mary",
@@ -155,6 +159,7 @@ function generateAgents(amount) {
         "Arthur",
         "Sara",
     ];
+
     const lastNames = [
         "Smith",
         "Johnson",
@@ -277,28 +282,36 @@ function generateAgents(amount) {
         "Hamilton",
         "Graham",
     ];
-    const roles = [agent_types_1.AgentRole.Officer, agent_types_1.AgentRole.Detective, agent_types_1.AgentRole.Captain, agent_types_1.AgentRole.Chief];
+
+    const roles = [AgentRole.Officer, AgentRole.Detective, AgentRole.Captain, AgentRole.Chief];
     const roleWeights = [0.6, 0.3, 0.08, 0.02];
-    const agents = [];
-    const usedNames = new Set();
+
+    const agents: Agent[] = [];
+    const usedNames = new Set<string>();
+
     for (let i = 0; i <= amount + 1; i++) {
-        let firstName;
-        let lastName;
-        let fullName;
+        let firstName: string;
+        let lastName: string;
+        let fullName: string;
+
         // Ensure unique names
         do {
             firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
             lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
             fullName = `${firstName} ${lastName}`;
         } while (usedNames.has(fullName));
+
         usedNames.add(fullName);
-        const agent = {
-            id: (0, uuid_1.v4)(),
+
+        const agent: Agent = {
+            id: uuidv4(),
             name: fullName,
             role: getRandomRole(roles, roleWeights),
             incorporationDate: generateRandomDate(),
         };
+
         agents.push(agent);
     }
+
     return agents;
 }
