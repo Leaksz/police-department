@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Agent, AgentRole } from "types/agent.types";
 
 function generateRandomDate(): string {
-    const start = new Date(2015, 0, 1);
+    const start = new Date(2007, 0, 1);
     const end = new Date(2024, 11, 31);
     const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
     const date = new Date(randomTime);

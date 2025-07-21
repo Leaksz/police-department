@@ -4,7 +4,7 @@ import agentsController from "../controllers/agentsController";
 const router = express.Router();
 
 /**
- * @swagger
+ * @openapi
  * components:
  *   schemas:
  *     Agent:
@@ -120,14 +120,14 @@ const router = express.Router();
  */
 
 /**
- * @swagger
+ * @openapi
  * tags:
  *   name: Agents
  *   description: Police agents management API
  */
 
 /**
- * @swagger
+ * @openapi
  * /agents:
  *   get:
  *     summary: Get all agents
@@ -166,7 +166,7 @@ const router = express.Router();
 router.get("/agents", agentsController.getAllAgents);
 
 /**
- * @swagger
+ * @openapi
  * /agents/{id}:
  *   get:
  *     summary: Get agent by ID
@@ -203,7 +203,7 @@ router.get("/agents", agentsController.getAllAgents);
 router.get("/agents/:id", agentsController.getAgentById);
 
 /**
- * @swagger
+ * @openapi
  * /agents:
  *   post:
  *     summary: Create a new agent
@@ -233,7 +233,7 @@ router.get("/agents/:id", agentsController.getAgentById);
 router.post("/agents", agentsController.createAgent);
 
 /**
- * @swagger
+ * @openapi
  * /agents/{id}:
  *   delete:
  *     summary: Delete an agent
@@ -266,7 +266,7 @@ router.post("/agents", agentsController.createAgent);
 router.delete("/agents/:id", agentsController.deleteAgent);
 
 /**
- * @swagger
+ * @openapi
  * /agents/{id}:
  *   put:
  *     summary: Update an agent (full replacement)
@@ -309,7 +309,7 @@ router.delete("/agents/:id", agentsController.deleteAgent);
 router.put("/agents/:id", agentsController.putAgent);
 
 /**
- * @swagger
+ * @openapi
  * /agents/{id}:
  *   patch:
  *     summary: Partially update an agent

@@ -4,7 +4,7 @@ import casesController from "../controllers/casesController";
 const router = express.Router();
 
 /**
- * @swagger
+ * @openapi
  * components:
  *   schemas:
  *     Case:
@@ -100,7 +100,7 @@ const router = express.Router();
  */
 
 /**
- * @swagger
+ * @openapi
  * tags:
  *   name: Cases
  *   description: Police cases management API
