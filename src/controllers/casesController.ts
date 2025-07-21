@@ -25,6 +25,7 @@ import {
 import hasValidationErrors from "utils/hasValidationErrors";
 import { parseAgent, parseCase, parseStringToEnum } from "utils/parse";
 import casesRepository from "../repositories/casesRepository";
+import { validate as isValidUUID } from "uuid";
 
 export function getAllCases(request: Request<{}, {}, {}, GetAllCasesQuery>, response: Response) {
     let cases = casesRepository.findAll();
@@ -66,10 +67,11 @@ export function getAllCases(request: Request<{}, {}, {}, GetAllCasesQuery>, resp
 
 function getCaseById(request: Request<GetCaseByIdParams>, response: Response) {
     const id = request.params.id;
-    if (!id) {
-        return response.status(400).send({
-            status: 400,
+    if (!id || isValidUUID(id)) {
+        return response.status(404).send({
+            status: 404,
             message: "Invalid parameters",
+            errors: ["Provided case id is not valid"],
         });
     }
 
@@ -151,11 +153,11 @@ function createCase(request: Request<{}, {}, CreateCaseBody>, response: Response
 
 function deleteCase(request: Request<DeleteCaseParams>, response: Response) {
     const id = request.params.id;
-    if (!id) {
+    if (!id || !isValidUUID(id)) {
         return response.status(400).send({
             status: 400,
             message: "Invalid parameters",
-            errors: [],
+            errors: ["Provided case id is not valid"],
         });
     }
 
@@ -215,13 +217,13 @@ function putCase(request: Request<UpdateCaseParams, {}, PutCaseBody>, response: 
 }
 
 function patchCase(request: Request<UpdateCaseParams, {}, PatchCaseBody>, response: Response) {
-    const agent = casesRepository.findById(request.params.id);
+    const caseId = casesRepository.findById(request.params.id);
 
-    if (!agent) {
+    if (!caseId || !isValidUUID(caseId)) {
         return response.status(404).send({
             status: 404,
             message: "Invalid parameters",
-            errors: [`Case with id ${request.params.id} not found`],
+            errors: [`Provided case id is not a valid id`],
         });
     }
 
@@ -235,7 +237,7 @@ function patchCase(request: Request<UpdateCaseParams, {}, PatchCaseBody>, respon
     }
 
     const updatedCase: Case = {
-        ...agent,
+        ...caseId,
         ...(Object.hasOwn(request.body, "title") && { name: request.body.title }),
         ...(Object.hasOwn(request.body, "description") && { description: request.body.description }),
         ...(Object.hasOwn(request.body, "status") && { status: parseStringToEnum(request.body.status!, CaseStatus) }),

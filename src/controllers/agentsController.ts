@@ -24,6 +24,7 @@ import {
 import { parseAgent, parseStringToEnum } from "utils/parse";
 import agentsRepository from "../repositories/agentsRepository";
 import hasValidationErrors from "utils/hasValidationErrors";
+import { validate as isValidUUID } from "uuid";
 
 function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response: Response) {
     let agents = agentsRepository.findAll();
@@ -73,11 +74,12 @@ function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response:
 
 function getAgentById(request: Request<GetAgentByIdParams>, response: Response) {
     const id = request.params.id;
-    if (!id) {
-        return response.status(400).send({
-            status: 400,
+
+    if (!id || !isValidUUID(id)) {
+        return response.status(404).send({
+            status: 404,
             message: "Invalid parameters",
-            errors: [],
+            errors: ["Provided agent id is not valid"],
         });
     }
 
@@ -112,11 +114,11 @@ function createAgent(request: Request<{}, {}, CreateAgentBody>, response: Respon
 
 function deleteAgent(request: Request<DeleteAgentParams>, response: Response) {
     const id = request.params.id;
-    if (!id) {
+    if (!id || !isValidUUID(id)) {
         return response.status(400).send({
             status: 400,
             message: "Invalid parameters",
-            errors: [],
+            errors: ["Provided agent id is not valid"],
         });
     }
 
@@ -138,6 +140,14 @@ function deleteAgent(request: Request<DeleteAgentParams>, response: Response) {
 function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, response: Response) {
     const { name, role, incorporationDate } = request.body;
     const agentId = request.params.id;
+
+    if (!agentId || !isValidUUID(agentId)) {
+        return response.status(404).send({
+            status: 404,
+            message: "Invalid parameters",
+            errors: ["Provided agent id is not valid"],
+        });
+    }
 
     if (!agentsRepository.findById(agentId)) {
         return response.status(404).send({
@@ -177,6 +187,14 @@ function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, respons
 }
 
 function patchAgent(request: Request<UpdateAgentParams, {}, PatchAgentBody>, response: Response) {
+    if (!request.params.id || !isValidUUID(request.params.id)) {
+        return response.status(404).send({
+            status: 404,
+            message: "Invalid parameters",
+            errors: ["Provided agent id is not valid"],
+        });
+    }
+
     const agent = agentsRepository.findById(request.params.id);
 
     if (!agent) {
