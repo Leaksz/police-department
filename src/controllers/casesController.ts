@@ -14,7 +14,7 @@ import {
     SearchCaseQuery,
     UpdateCaseParams,
 } from "types/case.types";
-import { RepositoryResponse } from "types/response";
+import { HttpStatus, RepositoryResponse, ResponseMessage } from "types/response.types";
 import {
     caseFieldConfigs,
     validateCaseField,
@@ -32,9 +32,9 @@ export function getAllCases(request: Request<{}, {}, {}, GetAllCasesQuery>, resp
 
     if (Object.hasOwn(request.query, "agentId")) {
         if (!agentsRepository.findById(request.query.agentId!)) {
-            return response.status(404).send({
-                status: 404,
-                message: "Invalid ID",
+            return response.status(HttpStatus.INVALID_ID).send({
+                status: HttpStatus.INVALID_ID,
+                message: ResponseMessage.INVALID_PARAMETERS,
                 error: `Agent with id '${request.query.agentId}' not found`,
             });
         }
@@ -50,9 +50,9 @@ export function getAllCases(request: Request<{}, {}, {}, GetAllCasesQuery>, resp
             caseFieldConfigs[2].displayName
         );
         if (error) {
-            return response.status(400).send({
-                status: 400,
-                message: "Invalid parameters",
+            return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+                status: HttpStatus.BAD_DATA_FORMATTING,
+                message: ResponseMessage.INVALID_PARAMETERS,
                 error,
             });
         }
@@ -62,46 +62,46 @@ export function getAllCases(request: Request<{}, {}, {}, GetAllCasesQuery>, resp
         );
     }
 
-    return response.json(cases.map((caseRecord) => parseCase(caseRecord)));
+    return response.status(HttpStatus.OK).json(cases.map((caseRecord) => parseCase(caseRecord)));
 }
 
 function getCaseById(request: Request<GetCaseByIdParams>, response: Response) {
     const id = request.params.id;
     if (!id || isValidUUID(id)) {
-        return response.status(404).send({
-            status: 404,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.INVALID_ID).send({
+            status: HttpStatus.INVALID_ID,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: ["Provided case id is not valid"],
         });
     }
 
     const caseRecord = casesRepository.findById(id);
     if (!caseRecord) {
-        return response.status(404).send({
-            status: 404,
-            message: `Invalid ID`,
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: [`Agent with id '${id}' not found`],
         });
     }
 
-    return response.send(caseRecord);
+    return response.status(HttpStatus.OK).send(caseRecord);
 }
 
 function getCaseAgent(request: Request<GetCaseAgentParams>, response: Response) {
     const caseRecord = casesRepository.findById(request.params.id);
     if (!caseRecord) {
-        return response.status(404).send({
-            status: 404,
-            message: "Invalid ID",
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: [`Case with id '${request.params.id}' not found`],
         });
     }
 
     const caseAgent = agentsRepository.findById(caseRecord.agentId);
     if (!caseAgent) {
-        return response.status(500).send({
-            status: 500,
-            message: "Internal Server Error",
+        return response.status(HttpStatus.SERVER_ERROR).send({
+            status: HttpStatus.SERVER_ERROR,
+            message: ResponseMessage.SERVER_ERROR,
             errors: [
                 `Case with id '${request.params.id}' does not have a valid responsible agent`,
                 `Found agentId: ${caseRecord.agentId}`,
@@ -109,15 +109,15 @@ function getCaseAgent(request: Request<GetCaseAgentParams>, response: Response) 
         });
     }
 
-    return response.status(200).send(parseAgent(caseAgent));
+    return response.status(HttpStatus.OK).send(parseAgent(caseAgent));
 }
 
 function searchCase(request: Request<{}, {}, {}, SearchCaseQuery>, response: Response) {
     const query = request.query.q;
     if (!query) {
-        return response.status(400).send({
-            status: 400,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: [`Invalid query parameter '${query}'`],
         });
     }
@@ -126,7 +126,7 @@ function searchCase(request: Request<{}, {}, {}, SearchCaseQuery>, response: Res
         .findAll()
         .filter((caseRecord) => caseRecord.title.includes(query) || caseRecord.description.includes(query));
 
-    return response.status(200).send(cases.map((caseRecord) => parseCase(caseRecord)));
+    return response.status(HttpStatus.OK).send(cases.map((caseRecord) => parseCase(caseRecord)));
 }
 
 function createCase(request: Request<{}, {}, CreateCaseBody>, response: Response) {
@@ -134,9 +134,9 @@ function createCase(request: Request<{}, {}, CreateCaseBody>, response: Response
 
     const errors = validateCreateCase(request.body);
     if (hasValidationErrors(errors)) {
-        return response.status(400).send({
-            status: 400,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors,
         });
     }
@@ -148,32 +148,32 @@ function createCase(request: Request<{}, {}, CreateCaseBody>, response: Response
         agentId,
     });
 
-    return response.status(201).send(parseCase(newCase));
+    return response.status(HttpStatus.CREATED).send(parseCase(newCase));
 }
 
 function deleteCase(request: Request<DeleteCaseParams>, response: Response) {
     const id = request.params.id;
     if (!id || !isValidUUID(id)) {
-        return response.status(400).send({
-            status: 400,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.INVALID_ID).send({
+            status: HttpStatus.INVALID_ID,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: ["Provided case id is not valid"],
         });
     }
 
     const deleted = casesRepository.deleteById(id);
-    if (deleted !== RepositoryResponse.Success) {
-        return response.status(404).send({
-            status: 404,
+    if (deleted !== RepositoryResponse.SUCCESS) {
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
             message:
-                deleted === RepositoryResponse.Failed
+                deleted === RepositoryResponse.FAILED
                     ? `Failed to delete case with id '${id}'`
                     : `Case with id '${id}' not found`,
             errors: [],
         });
     }
 
-    return response.status(204).send();
+    return response.status(HttpStatus.NO_CONTENT).send();
 }
 
 function putCase(request: Request<UpdateCaseParams, {}, PutCaseBody>, response: Response) {
@@ -181,18 +181,18 @@ function putCase(request: Request<UpdateCaseParams, {}, PutCaseBody>, response: 
     const caseId = request.params.id;
 
     if (!casesRepository.findById(caseId)) {
-        return response.status(404).send({
-            status: 404,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: [`Case with id ${caseId} not found`],
         });
     }
 
     const errors = validatePutCase(request.body);
     if (hasValidationErrors(errors)) {
-        return response.status(400).send({
-            status: 400,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors,
         });
     }
@@ -206,32 +206,32 @@ function putCase(request: Request<UpdateCaseParams, {}, PutCaseBody>, response: 
     };
 
     const update = casesRepository.update(updatedCase);
-    if (update !== RepositoryResponse.Success) {
-        return response.status(404).send({
-            status: 404,
+    if (update !== RepositoryResponse.SUCCESS) {
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
             message: `Case with id ${agentId} not found`,
         });
     }
 
-    return response.status(200).send(parseCase(updatedCase));
+    return response.status(HttpStatus.OK).send(parseCase(updatedCase));
 }
 
 function patchCase(request: Request<UpdateCaseParams, {}, PatchCaseBody>, response: Response) {
     const caseId = casesRepository.findById(request.params.id);
 
     if (!caseId || !isValidUUID(caseId)) {
-        return response.status(404).send({
-            status: 404,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.INVALID_ID).send({
+            status: HttpStatus.INVALID_ID,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: [`Provided case id is not a valid id`],
         });
     }
 
     const errors = validatePatchCase(request.body);
     if (hasValidationErrors(errors)) {
-        return response.status(400).send({
-            status: 400,
-            message: "Invalid parameters",
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors,
         });
     }
@@ -245,15 +245,15 @@ function patchCase(request: Request<UpdateCaseParams, {}, PatchCaseBody>, respon
     };
 
     const update = casesRepository.update(updatedCase);
-    if (update !== RepositoryResponse.Success) {
-        return response.status(404).send({
-            status: 404,
-            message: "Invalid parameters",
+    if (update !== RepositoryResponse.SUCCESS) {
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
+            message: ResponseMessage.INVALID_PARAMETERS,
             errors: [`Case with id ${request.params.id} not found`],
         });
     }
 
-    return response.status(200).send(parseCase(updatedCase));
+    return response.status(HttpStatus.OK).send(parseCase(updatedCase));
 }
 
 export default {

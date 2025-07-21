@@ -12,7 +12,7 @@ import {
     SortStrings,
     UpdateAgentParams,
 } from "types/agent.types";
-import { RepositoryResponse } from "types/response";
+import { HttpStatus, RepositoryResponse } from "types/response.types";
 import {
     agentFieldConfigs,
     isValidSortString,
@@ -37,8 +37,8 @@ function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response:
             agentFieldConfigs[1].displayName
         );
         if (error) {
-            return response.status(400).send({
-                status: 400,
+            return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+                status: HttpStatus.BAD_DATA_FORMATTING,
                 message: "Invalid parameters",
                 error,
             });
@@ -49,8 +49,8 @@ function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response:
 
     if (Object.hasOwn(request.query, "sort")) {
         if (!isValidSortString(request.query.sort!)) {
-            return response.status(400).send({
-                status: 400,
+            return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+                status: HttpStatus.BAD_DATA_FORMATTING,
                 message: "Invalid parameters",
                 error: `'${request.query.sort}' is not a valid sort string, Valid strings are: ${Object.values(
                     SortStrings
@@ -69,15 +69,15 @@ function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response:
         }
     }
 
-    return response.json(agents.map((agent) => parseAgent(agent)));
+    return response.status(HttpStatus.OK).json(agents.map((agent) => parseAgent(agent)));
 }
 
 function getAgentById(request: Request<GetAgentByIdParams>, response: Response) {
     const id = request.params.id;
 
     if (!id || !isValidUUID(id)) {
-        return response.status(404).send({
-            status: 404,
+        return response.status(HttpStatus.INVALID_ID).send({
+            status: HttpStatus.INVALID_ID,
             message: "Invalid parameters",
             errors: ["Provided agent id is not valid"],
         });
@@ -85,14 +85,14 @@ function getAgentById(request: Request<GetAgentByIdParams>, response: Response) 
 
     const agent = agentsRepository.findById(id);
     if (!agent) {
-        return response.status(404).send({
-            status: 404,
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
             message: `Agent with id '${id}' not found`,
             errors: [],
         });
     }
 
-    return response.send(parseAgent(agent));
+    return response.status(HttpStatus.OK).send(parseAgent(agent));
 }
 
 function createAgent(request: Request<{}, {}, CreateAgentBody>, response: Response) {
@@ -100,8 +100,8 @@ function createAgent(request: Request<{}, {}, CreateAgentBody>, response: Respon
 
     const errors = validateCreateAgent(request.body);
     if (hasValidationErrors(errors)) {
-        return response.status(400).send({
-            status: 400,
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
             message: "Invalid parameters",
             errors,
         });
@@ -109,32 +109,32 @@ function createAgent(request: Request<{}, {}, CreateAgentBody>, response: Respon
 
     const newAgent = agentsRepository.create(name, parseStringToEnum(role, AgentRole), incorporationDate);
 
-    return response.status(201).send(parseAgent(newAgent));
+    return response.status(HttpStatus.CREATED).send(parseAgent(newAgent));
 }
 
 function deleteAgent(request: Request<DeleteAgentParams>, response: Response) {
     const id = request.params.id;
     if (!id || !isValidUUID(id)) {
-        return response.status(400).send({
-            status: 400,
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
             message: "Invalid parameters",
             errors: ["Provided agent id is not valid"],
         });
     }
 
     const deleted = agentsRepository.deleteById(id);
-    if (deleted !== RepositoryResponse.Success) {
+    if (deleted !== RepositoryResponse.SUCCESS) {
         return response.status(404).send({
             status: 404,
             message:
-                deleted === RepositoryResponse.Failed
+                deleted === RepositoryResponse.FAILED
                     ? `Failed to delete agent with id '${id}'`
                     : `Agent with id '${id}' not found`,
             errors: [],
         });
     }
 
-    return response.status(204).send();
+    return response.status(HttpStatus.NO_CONTENT).send();
 }
 
 function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, response: Response) {
@@ -142,16 +142,16 @@ function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, respons
     const agentId = request.params.id;
 
     if (!agentId || !isValidUUID(agentId)) {
-        return response.status(404).send({
-            status: 404,
+        return response.status(HttpStatus.INVALID_ID).send({
+            status: HttpStatus.INVALID_ID,
             message: "Invalid parameters",
             errors: ["Provided agent id is not valid"],
         });
     }
 
     if (!agentsRepository.findById(agentId)) {
-        return response.status(404).send({
-            status: 404,
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
             message: "Invalid parameters",
             errors: [`Agent with id ${agentId} not found`],
         });
@@ -159,8 +159,8 @@ function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, respons
 
     const errors = validatePutAgent(request.body);
     if (hasValidationErrors(errors)) {
-        return response.status(400).send({
-            status: 400,
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
             message: "Invalid parameters",
             errors,
         });
@@ -176,20 +176,20 @@ function putAgent(request: Request<UpdateAgentParams, {}, PutAgentBody>, respons
     };
 
     const updated = agentsRepository.update(updatedAgent);
-    if (updated !== RepositoryResponse.Success) {
-        return response.status(404).send({
-            status: 404,
+    if (updated !== RepositoryResponse.SUCCESS) {
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
             message: `Agent with id ${agentId} not found`,
         });
     }
 
-    return response.status(200).send(parseAgent(updatedAgent));
+    return response.status(HttpStatus.OK).send(parseAgent(updatedAgent));
 }
 
 function patchAgent(request: Request<UpdateAgentParams, {}, PatchAgentBody>, response: Response) {
     if (!request.params.id || !isValidUUID(request.params.id)) {
-        return response.status(404).send({
-            status: 404,
+        return response.status(HttpStatus.INVALID_ID).send({
+            status: HttpStatus.INVALID_ID,
             message: "Invalid parameters",
             errors: ["Provided agent id is not valid"],
         });
@@ -198,8 +198,8 @@ function patchAgent(request: Request<UpdateAgentParams, {}, PatchAgentBody>, res
     const agent = agentsRepository.findById(request.params.id);
 
     if (!agent) {
-        return response.status(404).send({
-            status: 404,
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
             message: "Invalid parameters",
             errors: [`Agent with id ${request.params.id} not found`],
         });
@@ -207,8 +207,8 @@ function patchAgent(request: Request<UpdateAgentParams, {}, PatchAgentBody>, res
 
     const errors = validatePatchAgent(request.body);
     if (hasValidationErrors(errors)) {
-        return response.status(400).send({
-            status: 400,
+        return response.status(HttpStatus.BAD_DATA_FORMATTING).send({
+            status: HttpStatus.BAD_DATA_FORMATTING,
             message: "Invalid parameters",
             errors,
         });
@@ -222,15 +222,15 @@ function patchAgent(request: Request<UpdateAgentParams, {}, PatchAgentBody>, res
     };
 
     const updated = agentsRepository.update(updatedAgent);
-    if (updated !== RepositoryResponse.Success) {
-        return response.status(404).send({
-            status: 404,
+    if (updated !== RepositoryResponse.SUCCESS) {
+        return response.status(HttpStatus.ID_NOT_FOUND).send({
+            status: HttpStatus.ID_NOT_FOUND,
             message: "Invalid parameters",
             errors: [`Agent with id ${request.params.id} not found`],
         });
     }
 
-    return response.status(200).send(parseAgent(updatedAgent));
+    return response.status(HttpStatus.OK).send(parseAgent(updatedAgent));
 }
 
 export default {

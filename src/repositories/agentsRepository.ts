@@ -1,5 +1,5 @@
 import { Agent, AgentRole } from "types/agent.types";
-import { RepositoryResponse } from "types/response";
+import { RepositoryResponse } from "types/response.types";
 import { generateAgents } from "utils/generateMockData";
 import { v4 as uuidv4 } from "uuid";
 

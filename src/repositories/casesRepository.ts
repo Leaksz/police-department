@@ -1,5 +1,5 @@
 import { Case, CaseStatus } from "types/case.types";
-import { RepositoryResponse } from "types/response";
+import { RepositoryResponse } from "types/response.types";
 import { v4 as uuidv4 } from "uuid";
 
 const cases: Case[] = [
