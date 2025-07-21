@@ -60,13 +60,13 @@ function getAllAgents(request: Request<{}, {}, {}, GetAllAgentsQuery>, response:
             });
         }
 
-        agents = agents.toSorted((a, b) => {
-            return new Date(a.incorporationDate).getTime() - new Date(b.incorporationDate).getTime();
+        agents.sort((a, b) => {
+            const aDate = new Date(a.incorporationDate).getTime();
+            const bDate = new Date(b.incorporationDate).getTime();
+            return SortStrings[request.query.sort!] === SortStrings["incorporationDate"]
+                ? aDate - bDate
+                : bDate - aDate;
         });
-
-        if (SortStrings[request.query.sort!] === SortStrings["-incorporationDate"]) {
-            agents.reverse();
-        }
     }
 
     return response.status(HttpStatus.OK).json(agents.map((agent) => parseAgent(agent)));
@@ -217,7 +217,7 @@ function patchAgent(request: Request<UpdateAgentParams, {}, PatchAgentBody>, res
     const updatedAgent: Agent = {
         ...agent,
         ...(Object.hasOwn(request.body, "name") && { name: request.body.name }),
-        ...(Object.hasOwn(request.body, "role") && { role: AgentRole[request.body.role as keyof typeof AgentRole] }),
+        ...(Object.hasOwn(request.body, "role") && { role: parseStringToEnum(request.body.role!, AgentRole) }),
         ...(Object.hasOwn(request.body, "incorporationDate") && { incorporationDate: request.body.incorporationDate }),
     };
 
