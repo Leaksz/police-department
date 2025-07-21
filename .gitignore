@@ -5,6 +5,7 @@
 /.env.dev
 /.env.development
 /package-lock.json
+/tsconfig.tsbuildinfo
 
 .vscode/*
 !.vscode/extensions.json
